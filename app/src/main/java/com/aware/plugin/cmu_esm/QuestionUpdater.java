@@ -20,6 +20,7 @@ import org.json.JSONObject;
  * Created by denzil on 1/8/16. Edited by Jung-wook 1/15/16
  */
 public class QuestionUpdater extends IntentService {
+
     public QuestionUpdater() {
         super("QuestionUpdater");
     }
@@ -50,12 +51,17 @@ public class QuestionUpdater extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        //Process ESM
+        if (intent != null && intent.hasExtra(ESM.EXTRA_ESM)) {
+            ESM.queueESM(getApplicationContext(), intent.getStringExtra(ESM.EXTRA_ESM));
+            return;
+        }
+
         /**
          * URL for device ID
          */
         String deviceId = Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID);
         String esmURL = "http://r2d2.hcii.cs.cmu.edu/esm/"+deviceId+"/master.json";
-
 
         try {
             String schedules = new Http(getApplicationContext()).dataGET(esmURL, false);
@@ -97,8 +103,8 @@ public class QuestionUpdater extends IntentService {
                     for(int j=0;j<hours.length();j++) {
                         campus_schedule.addHour(hours.getInt(j)); //set trigger hours
                     }
-                    campus_schedule.setActionType(Scheduler.ACTION_TYPE_BROADCAST);
-                    campus_schedule.setActionClass(ESM.ACTION_AWARE_QUEUE_ESM);
+                    campus_schedule.setActionType(Scheduler.ACTION_TYPE_SERVICE);
+                    campus_schedule.setActionClass("com.aware.plugin.cmu_esm/com.aware.plugin.cmu_esm.QuestionUpdater");
                     campus_schedule.addActionExtra(ESM.EXTRA_ESM, esms.toString());
 
                     //Update previous schedule_id to this new definition
