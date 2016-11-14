@@ -87,7 +87,6 @@ public class QuestionUpdater extends IntentService {
 
                 //Store new schedule ids
                 String[] new_schedule_ids = new String[schedulesJSON.length()];
-
                 for (int i=0; i < schedulesJSON.length(); i++){
                     JSONObject todaysSchedule = schedulesJSON.getJSONObject(i);
 
@@ -104,15 +103,13 @@ public class QuestionUpdater extends IntentService {
                         campus_schedule.addHour(hours.getInt(j)); //set trigger hours
                     }
                     campus_schedule.setActionType(Scheduler.ACTION_TYPE_SERVICE);
-                    campus_schedule.setActionClass("com.aware.plugin.cmu_esm/com.aware.plugin.cmu_esm.QuestionUpdater");
+                    campus_schedule.setActionClass(getPackageName() + "/" + QuestionUpdater.class.getName());
                     campus_schedule.addActionExtra(ESM.EXTRA_ESM, esms.toString());
 
                     //Update previous schedule_id to this new definition
                     Scheduler.saveSchedule(this, campus_schedule);
                 }
-
                 insertScheduleID(sharedPreferences,new_schedule_ids);
-
             }
 
         } catch (JSONException e) {

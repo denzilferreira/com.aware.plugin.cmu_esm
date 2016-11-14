@@ -28,8 +28,6 @@ import org.json.JSONException;
 
 public class Plugin extends Aware_Plugin {
 
-    private static final String ACTION_AWARE_CAMPUS_QUESTION_UPDATE = "ACTION_AWARE_CAMPUS_QUESTION_UPDATE";
-
     public static final String SHARED_PREF_NAME = "CMU_ESM_SHARED_PREF";
     public static final String SHARED_PREF_KEY_VERSION_CODE = "SHARED_PREF_KEY_VERSION_CODE";
     public static final String SHARED_PREF_KEY_STORED_SCHEDULE_IDS = "STORED_SCHEDULE_IDS";
@@ -38,7 +36,7 @@ public class Plugin extends Aware_Plugin {
     public void onCreate() {
         super.onCreate();
 
-        TAG = "AWARE::"+getResources().getString(R.string.app_name);
+        TAG = getResources().getString(R.string.app_name);
 
         //Any active plugin/sensor shares its overall context using broadcasts
         CONTEXT_PRODUCER = new ContextProducer() {
@@ -48,20 +46,24 @@ public class Plugin extends Aware_Plugin {
             }
         };
 
-        //Add permissions you need (Support for Android M). By default, AWARE asks access to the #Manifest.permission.WRITE_EXTERNAL_STORAGE
         //REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         REQUIRED_PERMISSIONS.add(Manifest.permission.VIBRATE);
 
-        //To sync data to the server, you'll need to set this variables from your ContentProvider
-//        DATABASE_TABLES = Provider.DATABASE_TABLES;
-//        TABLES_FIELDS = Provider.TABLES_FIELDS;
-//        CONTEXT_URIS = new Uri[]{ Provider.TableOne_Data.CONTENT_URI }; //this syncs dummy TableOne_Data to server
-
-        IntentFilter filter = new IntentFilter(ACTION_AWARE_CAMPUS_QUESTION_UPDATE);
-        registerReceiver(questionsListener, filter);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Aware.ACTION_AWARE_SYNC_DATA);
+        registerReceiver(syncReceiver, filter);
 
         //Activate plugin -- do this ALWAYS as the last thing (this will restart your own plugin and apply the settings)
         Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
+    }
+
+    private static SyncReceiver syncReceiver = new SyncReceiver();
+    public static class SyncReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent scheduleDownload = new Intent(context, QuestionUpdater.class);
+            context.startService(scheduleDownload);
+        }
     }
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
@@ -86,20 +88,20 @@ public class Plugin extends Aware_Plugin {
             SharedPreferences sp = getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
             int previousVersionCode = sp.getInt(SHARED_PREF_KEY_VERSION_CODE, -1);
 
-            if (previousVersionCode == -1){
+            if (previousVersionCode == -1) {
                 int versionCode = recordFirstOperationInDatabase();
                 sp.edit().putInt(SHARED_PREF_KEY_VERSION_CODE, versionCode).commit();
-            }else{
-                try{
+            } else {
+                try {
                     PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
                     int currentVersionCode = pInfo.versionCode;
 
-                    if (currentVersionCode > previousVersionCode){
+                    if (currentVersionCode > previousVersionCode) {
                         int versionCode = recordFirstOperationInDatabase();
                         sp.edit().putInt(SHARED_PREF_KEY_VERSION_CODE, versionCode).commit();
                     }
-                }catch (PackageManager.NameNotFoundException e){
-                    if(Aware.DEBUG) Log.e(TAG,e.getMessage());
+                } catch (PackageManager.NameNotFoundException e) {
+                    if (Aware.DEBUG) Log.e(TAG, e.getMessage());
                 }
             }
 
@@ -111,20 +113,22 @@ public class Plugin extends Aware_Plugin {
                     questionSchedule.addHour(2);
                     questionSchedule.addHour(3);
                     questionSchedule.addHour(4);
-                    questionSchedule.setActionType(Scheduler.ACTION_TYPE_BROADCAST);
-                    questionSchedule.setActionClass(ACTION_AWARE_CAMPUS_QUESTION_UPDATE);
+                    questionSchedule.setActionType(Scheduler.ACTION_TYPE_SERVICE);
+                    questionSchedule.setActionClass(getPackageName() + "/" + QuestionUpdater.class.getName());
 
                     Scheduler.saveSchedule(this, questionSchedule);
                 }
-            } catch (JSONException e) {}
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-            //Check if we already have schedules downloaded, if not, try again every 5 minutes until we do
-            Cursor schedules = getContentResolver().query(Scheduler_Provider.Scheduler_Data.CONTENT_URI, null, Scheduler_Provider.Scheduler_Data.PACKAGE_NAME + " LIKE 'com.aware.plugin.cmu_esm'", null, null);
-            if( schedules != null && schedules.getCount() <= 1 ) {
+            //Check if we already have daily schedules downloaded, if not, try again every 5 minutes until we do
+            Cursor schedules = getContentResolver().query(Scheduler_Provider.Scheduler_Data.CONTENT_URI, null, Scheduler_Provider.Scheduler_Data.SCHEDULE_ID + " NOT LIKE 'question_updater' AND " + Scheduler_Provider.Scheduler_Data.PACKAGE_NAME + " LIKE 'com.aware.plugin.cmu_esm'", null, null);
+            if (schedules == null || (schedules != null && schedules.getCount() == 0)) {
                 Intent scheduleDownload = new Intent(this, QuestionUpdater.class);
                 startService(scheduleDownload);
             }
-            if( schedules != null && ! schedules.isClosed() ) schedules.close();
+            if (schedules != null && !schedules.isClosed()) schedules.close();
 
         } else {
             Intent permissions = new Intent(this, PermissionsHandler.class);
@@ -136,21 +140,10 @@ public class Plugin extends Aware_Plugin {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private static final FetchQuestions questionsListener = new FetchQuestions();
-    public static class FetchQuestions extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if( intent.getAction().equals(ACTION_AWARE_CAMPUS_QUESTION_UPDATE) ) {
-                Intent scheduleDownload = new Intent(context, QuestionUpdater.class);
-                context.startService(scheduleDownload);
-            }
-        }
-    }
-
-    private int recordFirstOperationInDatabase(){
+    private int recordFirstOperationInDatabase() {
         String FLAG_PLUGIN_UPDATE = "[PLUGIN UPDATE INSTALL]";
         int versionCode = 0;
-        try{
+        try {
             PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
             String versionName = pInfo.versionName;
             versionCode = pInfo.versionCode;
@@ -159,22 +152,22 @@ public class Plugin extends Aware_Plugin {
             rowData.put(Applications_Provider.Applications_History.TIMESTAMP, System.currentTimeMillis());
             rowData.put(Applications_Provider.Applications_History.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
             rowData.put(Applications_Provider.Applications_History.PACKAGE_NAME, getPackageName());
-            rowData.put(Applications_Provider.Applications_History.APPLICATION_NAME, FLAG_PLUGIN_UPDATE + "CMU ESM" + ", VersionName:" + versionName +", VersionCode:" + versionCode);
+            rowData.put(Applications_Provider.Applications_History.APPLICATION_NAME, FLAG_PLUGIN_UPDATE + "CMU ESM" + ", VersionName:" + versionName + ", VersionCode:" + versionCode);
             rowData.put(Applications_Provider.Applications_History.PROCESS_IMPORTANCE, 0);
             rowData.put(Applications_Provider.Applications_History.PROCESS_ID, 0);
             rowData.put(Applications_Provider.Applications_History.END_TIMESTAMP, pInfo.firstInstallTime); //Installation Time;
             rowData.put(Applications_Provider.Applications_History.IS_SYSTEM_APP, 0);
             try {
                 getContentResolver().insert(Applications_Provider.Applications_History.CONTENT_URI, rowData);
-            }catch( SQLiteException e ) {
-                if(Aware.DEBUG) Log.e(TAG, e.getMessage());
-            }catch( SQLException e ) {
-                if(Aware.DEBUG) Log.e(TAG,e.getMessage());
+            } catch (SQLiteException e) {
+                if (Aware.DEBUG) Log.e(TAG, e.getMessage());
+            } catch (SQLException e) {
+                if (Aware.DEBUG) Log.e(TAG, e.getMessage());
             }
-        }catch (PackageManager.NameNotFoundException e){
-            if(Aware.DEBUG) Log.e(TAG,e.getMessage());
-        }catch (Exception e){
-            if(Aware.DEBUG) Log.e(TAG,e.getMessage());
+        } catch (PackageManager.NameNotFoundException e) {
+            if (Aware.DEBUG) Log.e(TAG, e.getMessage());
+        } catch (Exception e) {
+            if (Aware.DEBUG) Log.e(TAG, e.getMessage());
         }
 
         return versionCode;
@@ -184,7 +177,7 @@ public class Plugin extends Aware_Plugin {
     public void onDestroy() {
         super.onDestroy();
 
-        unregisterReceiver(questionsListener);
+        unregisterReceiver(syncReceiver);
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
         Aware.stopPlugin(this, "com.aware.plugin.cmu_esm");
 
