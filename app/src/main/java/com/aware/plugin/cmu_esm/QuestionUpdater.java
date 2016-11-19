@@ -16,6 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+
 /**
  * Created by denzil on 1/8/16. Edited by Jung-wook 1/15/16
  */
@@ -94,14 +97,21 @@ public class QuestionUpdater extends IntentService {
                     String schedule_id = todaysSchedule.getString("schedule_id");
                     JSONArray hours = todaysSchedule.getJSONArray("hours");
                     JSONArray esms = todaysSchedule.getJSONArray("esms");
+
                     if( Aware.DEBUG ) Log.d(Plugin.TAG, "ESM hours Size" + hours.length()  + " Message:" + hours.toString());
 
                     new_schedule_ids[i] = schedule_id;
 
                     //Set today's questions
                     Scheduler.Schedule campus_schedule = new Scheduler.Schedule(schedule_id);
-                    for(int j=0;j<hours.length();j++) {
-                        campus_schedule.addHour(hours.getInt(j)); //set trigger hours
+                    if (hours.getInt(0) != -1) {
+                        for(int j=0;j<hours.length();j++) {
+                            campus_schedule.addHour(hours.getInt(j)); //set trigger hours
+                        }
+                    } else {
+                        int randomizeAmount = todaysSchedule.getInt("randomize");
+//                        8,9,10,11,12,13,14,15,16,17,18,19
+//                        Scheduler.random_times(startDate, endDate, randomizeAmount, 15);
                     }
                     campus_schedule.setActionType(Scheduler.ACTION_TYPE_SERVICE);
                     campus_schedule.setActionClass("com.aware.plugin.cmu_esm/com.aware.plugin.cmu_esm.QuestionUpdater");

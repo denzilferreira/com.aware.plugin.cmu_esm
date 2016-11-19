@@ -21,6 +21,12 @@
             android:exported="true"
             android:label="ScheduleDownloader" />
 
+        <receiver android:name="com.aware.plugin.cmu_esm.Plugin$FetchQuestions" android:exported="true">
+            <intent-filter>
+                <action android:name="ACTION_AWARE_CAMPUS_QUESTION_UPDATE" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="com.aware.plugin.cmu_esm.Provider"
             android:authorities="${applicationId}.provider.xxx"

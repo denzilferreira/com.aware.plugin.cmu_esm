@@ -57,8 +57,8 @@ public class Plugin extends Aware_Plugin {
 //        TABLES_FIELDS = Provider.TABLES_FIELDS;
 //        CONTEXT_URIS = new Uri[]{ Provider.TableOne_Data.CONTENT_URI }; //this syncs dummy TableOne_Data to server
 
-        IntentFilter filter = new IntentFilter(ACTION_AWARE_CAMPUS_QUESTION_UPDATE);
-        registerReceiver(questionsListener, filter);
+//        IntentFilter filter = new IntentFilter(ACTION_AWARE_CAMPUS_QUESTION_UPDATE);
+//        registerReceiver(questionsListener, filter);
 
         //Activate plugin -- do this ALWAYS as the last thing (this will restart your own plugin and apply the settings)
         Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
@@ -184,9 +184,9 @@ public class Plugin extends Aware_Plugin {
     public void onDestroy() {
         super.onDestroy();
 
-        unregisterReceiver(questionsListener);
+//        unregisterReceiver(questionsListener);
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
-        Aware.stopPlugin(this, "com.aware.plugin.cmu_esm");
+//        Aware.stopPlugin(this, "com.aware.plugin.cmu_esm");
 
         //Stop AWARE
         Aware.stopAWARE();
