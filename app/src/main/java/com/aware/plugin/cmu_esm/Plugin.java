@@ -149,7 +149,6 @@ public class Plugin extends Aware_Plugin {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private static final FetchQuestions questionsListener = new FetchQuestions();
     public static class FetchQuestions extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -197,9 +196,7 @@ public class Plugin extends Aware_Plugin {
     public void onDestroy() {
         super.onDestroy();
 
-//        unregisterReceiver(questionsListener);
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
-//        Aware.stopPlugin(this, "com.aware.plugin.cmu_esm");
 
         //Stop AWARE
         Aware.stopAWARE();

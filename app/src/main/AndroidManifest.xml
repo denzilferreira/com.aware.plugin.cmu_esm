@@ -27,12 +27,5 @@
             </intent-filter>
         </receiver>
 
-        <provider
-            android:name="com.aware.plugin.cmu_esm.Provider"
-            android:authorities="${applicationId}.provider.xxx"
-            android:exported="true"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-
     </application>
 </manifest>
