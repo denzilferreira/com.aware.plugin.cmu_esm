@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.aware.plugin.cmu_esm">
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name">
+
+        <service
+            android:name="com.aware.plugin.cmu_esm.Plugin"
+            android:exported="true" />
+
+        <activity
+            android:name="com.aware.plugin.cmu_esm.Settings"
+            android:exported="true" />
+
+        <service
+            android:name="com.aware.plugin.cmu_esm.QuestionUpdater"
+            android:exported="true"
+            android:label="ScheduleDownloader" />
+
+        <receiver android:name="com.aware.plugin.cmu_esm.Plugin$FetchQuestions" android:exported="true">
+            <intent-filter>
+                <action android:name="ACTION_AWARE_CAMPUS_QUESTION_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>
