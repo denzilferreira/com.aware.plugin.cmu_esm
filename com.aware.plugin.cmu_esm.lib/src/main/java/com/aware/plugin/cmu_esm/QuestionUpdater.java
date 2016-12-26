@@ -16,9 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-
 /**
  * Created by denzil on 1/8/16. Edited by Jung-wook 1/15/16
  */
@@ -31,11 +28,7 @@ public class QuestionUpdater extends IntentService {
     private String[] parceScheduleID(SharedPreferences pref){
         String strIds = pref.getString(Plugin.SHARED_PREF_KEY_STORED_SCHEDULE_IDS, "");
         if (strIds.length() > 0){
-            String[] ids = strIds.split(",");
-            for (int i = 0; i < ids.length; i++){
-                //Log.e("", "Parce schedule id:" + ids[i]);
-            }
-            return ids;
+            return strIds.split(",");
         }else{
             return new String[]{};
         }
@@ -54,12 +47,6 @@ public class QuestionUpdater extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        //Process ESM
-        if (intent != null && intent.hasExtra(ESM.EXTRA_ESM)) {
-            ESM.queueESM(getApplicationContext(), intent.getStringExtra(ESM.EXTRA_ESM));
-            return;
-        }
-
         /**
          * URL for device ID
          */
@@ -77,14 +64,14 @@ public class QuestionUpdater extends IntentService {
             if (schedules != null && schedules.length() > 0){
                 JSONArray schedulesJSON = new JSONArray(schedules);
 
-                //Remove Existing ESM Schedule
+                //Remove Existing ESM Schedules
                 SharedPreferences sharedPreferences = getSharedPreferences(Plugin.SHARED_PREF_NAME, Context.MODE_PRIVATE);
                 String configuredScheduleIds = sharedPreferences.getString(Plugin.SHARED_PREF_KEY_STORED_SCHEDULE_IDS, "");
                 if (configuredScheduleIds.length() > 0){
-                    String[] scheudle_ids = parceScheduleID(sharedPreferences);
-                    for (int i = 0; i < scheudle_ids.length; i++){
-                        Scheduler.removeSchedule(this,scheudle_ids[i]);
-                        Log.e("", "Remove Existing Schedule:" + scheudle_ids[i]);
+                    String[] schedulesIDs = parceScheduleID(sharedPreferences);
+                    for (int i = 0; i < schedulesIDs.length; i++){
+                        Scheduler.removeSchedule(this, schedulesIDs[i]);
+                        Log.e("", "Remove Existing Schedule:" + schedulesIDs[i]);
                     }
                 }
 
@@ -103,22 +90,17 @@ public class QuestionUpdater extends IntentService {
 
                     //Set today's questions
                     Scheduler.Schedule campus_schedule = new Scheduler.Schedule(schedule_id);
-                    if (hours.getInt(0) != -1) {
-                        for(int j=0;j<hours.length();j++) {
-                            campus_schedule.addHour(hours.getInt(j)); //set trigger hours
-                        }
-                    } else {
-                        int randomizeAmount = todaysSchedule.getInt("randomize");
-//                        8,9,10,11,12,13,14,15,16,17,18,19
-//                        Scheduler.random_times(startDate, endDate, randomizeAmount, 15);
+                    for(int j=0;j<hours.length();j++) {
+                        campus_schedule.addHour(hours.getInt(j)); //set trigger hours
                     }
-                    campus_schedule.setActionType(Scheduler.ACTION_TYPE_SERVICE);
-                    campus_schedule.setActionClass(getPackageName() + "/" + QuestionUpdater.class.getName());
+                    campus_schedule.setActionType(Scheduler.ACTION_TYPE_BROADCAST);
+                    campus_schedule.setActionIntentAction(ESM.ACTION_AWARE_QUEUE_ESM);
                     campus_schedule.addActionExtra(ESM.EXTRA_ESM, esms.toString());
 
                     //Update previous schedule_id to this new definition
                     Scheduler.saveSchedule(this, campus_schedule);
                 }
+
                 insertScheduleID(sharedPreferences,new_schedule_ids);
             }
 

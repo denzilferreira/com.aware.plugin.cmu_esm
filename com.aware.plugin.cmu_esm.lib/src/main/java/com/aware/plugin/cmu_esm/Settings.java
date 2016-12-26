@@ -14,9 +14,11 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
 
     //Plugin settings in XML @xml/preferences
     public static final String STATUS_PLUGIN_CMU_ESM = "status_plugin_cmu_esm";
+    public static final String UPDATE_QUESTIONS = "update_questions";
 
     //Plugin settings UI elements
     private static CheckBoxPreference status;
+    private static Preference update_questions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +38,15 @@ public class Settings extends PreferenceActivity implements SharedPreferences.On
         }
         status.setChecked(Aware.getSetting(this, STATUS_PLUGIN_CMU_ESM).equals("true"));
 
-        Intent fetchQuestions = new Intent(this, QuestionUpdater.class);
-        startService(fetchQuestions);
+        update_questions = (Preference) findPreference(UPDATE_QUESTIONS);
+        update_questions.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent fetchQuestions = new Intent(getApplicationContext(), QuestionUpdater.class);
+                startService(fetchQuestions);
+                return true;
+            }
+        });
 
         Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
     }
