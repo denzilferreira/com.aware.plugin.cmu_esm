@@ -153,6 +153,6 @@ public class Plugin extends Aware_Plugin {
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
 
         //Stop AWARE
-        Aware.stopAWARE();
+        Aware.stopAWARE(this);
     }
 }
