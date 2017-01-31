@@ -10,6 +10,7 @@
 
         <service
             android:name="com.aware.plugin.cmu_esm.Plugin"
+            android:label="AWARE: CMU ESM"
             android:exported="true" />
 
         <activity
@@ -19,13 +20,7 @@
         <service
             android:name="com.aware.plugin.cmu_esm.QuestionUpdater"
             android:exported="true"
-            android:label="ScheduleDownloader" />
-
-        <receiver android:name="com.aware.plugin.cmu_esm.Plugin$FetchQuestions" android:exported="true">
-            <intent-filter>
-                <action android:name="ACTION_AWARE_CAMPUS_QUESTION_UPDATE" />
-            </intent-filter>
-        </receiver>
+            android:label="AWARE: CMU ESM Schedule Sync" />
 
     </application>
 </manifest>

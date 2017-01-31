@@ -9,4 +9,9 @@
         android:persistent="true"
         android:summary="Activate/deactivate plugin" />
 
+    <Preference android:key="update_questions"
+        android:persistent="true"
+        android:title="Update questions"
+        android:dependency="status_plugin_cmu_esm"/>
+
 </PreferenceScreen>
