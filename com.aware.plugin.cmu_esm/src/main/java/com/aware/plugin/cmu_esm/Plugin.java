@@ -40,9 +40,6 @@ public class Plugin extends Aware_Plugin {
 
         //REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         REQUIRED_PERMISSIONS.add(Manifest.permission.VIBRATE);
-
-        //Activate plugin -- do this ALWAYS as the last thing (this will restart your own plugin and apply the settings)
-        Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
     }
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
