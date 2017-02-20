@@ -57,7 +57,7 @@ public class QuestionUpdater extends IntentService {
         String esmURL = "http://r2d2.hcii.cs.cmu.edu/esm/"+deviceId+"/master.json";
 
         try {
-            String schedules = new Http(getApplicationContext()).dataGET(esmURL, false);
+            String schedules = new Http().dataGET(esmURL, false);
 
             if( Aware.DEBUG ) {
                 Log.d(Plugin.TAG, "Request URL:" + esmURL);
