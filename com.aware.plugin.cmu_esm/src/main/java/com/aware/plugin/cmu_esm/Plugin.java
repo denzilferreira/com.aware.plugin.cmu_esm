@@ -100,6 +100,8 @@ public class Plugin extends Aware_Plugin {
                 e.printStackTrace();
             }
 
+            Aware.startAWARE(this);
+
         } else {
             Intent permissions = new Intent(this, PermissionsHandler.class);
             permissions.putExtra(PermissionsHandler.EXTRA_REQUIRED_PERMISSIONS, REQUIRED_PERMISSIONS);
