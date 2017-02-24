@@ -1,26 +1,19 @@
 package com.aware.plugin.cmu_esm;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteException;
-import android.net.Uri;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.providers.Applications_Provider;
-import com.aware.providers.Scheduler_Provider;
-import com.aware.ui.PermissionsHandler;
 import com.aware.utils.Aware_Plugin;
 import com.aware.utils.Scheduler;
 
@@ -32,6 +25,8 @@ public class Plugin extends Aware_Plugin {
     public static final String SHARED_PREF_KEY_VERSION_CODE = "SHARED_PREF_KEY_VERSION_CODE";
     public static final String SHARED_PREF_KEY_STORED_SCHEDULE_IDS = "STORED_SCHEDULE_IDS";
 
+    private Intent aware;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -41,7 +36,8 @@ public class Plugin extends Aware_Plugin {
         //REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         REQUIRED_PERMISSIONS.add(Manifest.permission.VIBRATE);
 
-        Aware.startAWARE(this);
+        aware = new Intent(this, Aware.class);
+        startService(aware);
     }
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
@@ -138,7 +134,6 @@ public class Plugin extends Aware_Plugin {
 
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
 
-        //Stop AWARE
-        Aware.stopAWARE(this);
+        stopService(aware);
     }
 }
