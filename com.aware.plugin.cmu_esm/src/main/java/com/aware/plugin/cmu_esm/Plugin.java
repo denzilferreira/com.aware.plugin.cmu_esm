@@ -15,6 +15,7 @@ import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.providers.Applications_Provider;
 import com.aware.utils.Aware_Plugin;
+import com.aware.utils.PluginsManager;
 import com.aware.utils.Scheduler;
 
 import org.json.JSONException;
@@ -25,8 +26,6 @@ public class Plugin extends Aware_Plugin {
     public static final String SHARED_PREF_KEY_VERSION_CODE = "SHARED_PREF_KEY_VERSION_CODE";
     public static final String SHARED_PREF_KEY_STORED_SCHEDULE_IDS = "STORED_SCHEDULE_IDS";
 
-    private Intent aware;
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -35,9 +34,6 @@ public class Plugin extends Aware_Plugin {
 
         //REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         REQUIRED_PERMISSIONS.add(Manifest.permission.VIBRATE);
-
-        aware = new Intent(this, Aware.class);
-        startService(aware);
     }
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
@@ -46,6 +42,9 @@ public class Plugin extends Aware_Plugin {
         super.onStartCommand(intent, flags, startId);
 
         if (PERMISSIONS_OK) {
+
+            PluginsManager.enablePlugin(this, "com.aware.plugin.cmu_esm");
+
             //Check if the user has toggled the debug messages
             DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
 
@@ -90,6 +89,8 @@ public class Plugin extends Aware_Plugin {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            Aware.startAWARE(this);
         }
 
         return START_STICKY;
@@ -134,6 +135,6 @@ public class Plugin extends Aware_Plugin {
 
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
 
-        stopService(aware);
+        Aware.stopAWARE(this);
     }
 }
