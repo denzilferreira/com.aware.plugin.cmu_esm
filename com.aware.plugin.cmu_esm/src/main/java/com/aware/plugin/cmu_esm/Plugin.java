@@ -15,7 +15,6 @@ import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.providers.Applications_Provider;
 import com.aware.utils.Aware_Plugin;
-import com.aware.utils.PluginsManager;
 import com.aware.utils.Scheduler;
 
 import org.json.JSONException;
@@ -42,8 +41,6 @@ public class Plugin extends Aware_Plugin {
         super.onStartCommand(intent, flags, startId);
 
         if (PERMISSIONS_OK) {
-
-            PluginsManager.enablePlugin(this, "com.aware.plugin.cmu_esm");
 
             //Check if the user has toggled the debug messages
             DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
@@ -90,6 +87,7 @@ public class Plugin extends Aware_Plugin {
                 e.printStackTrace();
             }
 
+            Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
             Aware.startAWARE(this);
         }
 
