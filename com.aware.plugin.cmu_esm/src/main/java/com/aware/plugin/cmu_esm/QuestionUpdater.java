@@ -57,11 +57,11 @@ public class QuestionUpdater extends IntentService {
         String esmURL = "http://r2d2.hcii.cs.cmu.edu/esm/"+deviceId+"/master.json";
 
         try {
-            String schedules = new Http(getApplicationContext()).dataGET(esmURL, false);
+            String schedules = new Http().dataGET(esmURL, false);
 
             if( Aware.DEBUG ) {
-                Log.d(Plugin.TAG, "Request URL:" + esmURL);
-                Log.d(Plugin.TAG, "Received Data:" + schedules);
+                Log.d(Aware.TAG, "Request URL:" + esmURL);
+                Log.d(Aware.TAG, "Received Data:" + schedules);
             }
 
             if (schedules != null && schedules.length() > 0){
@@ -87,7 +87,7 @@ public class QuestionUpdater extends IntentService {
                     JSONArray hours = todaysSchedule.getJSONArray("hours");
                     JSONArray esms = todaysSchedule.getJSONArray("esms");
 
-                    if( Aware.DEBUG ) Log.d(Plugin.TAG, "ESM hours Size" + hours.length()  + " Message:" + hours.toString());
+                    if( Aware.DEBUG ) Log.d(Aware.TAG, "ESM hours Size" + hours.length()  + " Message:" + hours.toString());
 
                     new_schedule_ids[i] = schedule_id;
 
@@ -108,10 +108,10 @@ public class QuestionUpdater extends IntentService {
             }
 
         } catch (JSONException e) {
-            Log.e(Plugin.TAG, "Json Parsing Error: " + e.getMessage());
+            Log.e(Aware.TAG, "Json Parsing Error: " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
-            Log.e(Plugin.TAG, "No data in the Url or exceptions except for Json parsing: " + e.getMessage());
+            Log.e(Aware.TAG, "No data in the Url or exceptions except for Json parsing: " + e.getMessage());
         }
 
     }

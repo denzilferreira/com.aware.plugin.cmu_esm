@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import com.aware.Aware;
 import com.aware.providers.ESM_Provider;
 import com.aware.utils.IContextCard;
 
@@ -33,7 +34,7 @@ public class ContextCard implements IContextCard {
         counter_txt = (TextView) card.findViewById(R.id.counter);
 
         Cursor esmsDistribution = context.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, new String[]{ESM_Provider.ESM_Data.STATUS, "count(*) as total_esms"}, "1 ) GROUP BY ( esm_status ", null, null);
-        Log.d(Plugin.TAG, DatabaseUtils.dumpCursorToString(esmsDistribution));
+        Log.d(Aware.TAG, DatabaseUtils.dumpCursorToString(esmsDistribution));
 
         String output = "";
         //the status of the ESM (0-new, 1-dismissed, 2-answered, 3-expired)

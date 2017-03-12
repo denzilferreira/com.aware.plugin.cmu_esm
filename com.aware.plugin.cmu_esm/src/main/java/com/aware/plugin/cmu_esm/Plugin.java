@@ -1,26 +1,19 @@
 package com.aware.plugin.cmu_esm;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteException;
-import android.net.Uri;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.providers.Applications_Provider;
-import com.aware.providers.Scheduler_Provider;
-import com.aware.ui.PermissionsHandler;
 import com.aware.utils.Aware_Plugin;
 import com.aware.utils.Scheduler;
 
@@ -40,24 +33,15 @@ public class Plugin extends Aware_Plugin {
 
         //REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         REQUIRED_PERMISSIONS.add(Manifest.permission.VIBRATE);
-
-        //Activate plugin -- do this ALWAYS as the last thing (this will restart your own plugin and apply the settings)
-        Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
     }
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
 
-        boolean permissions_ok = true;
-        for (String p : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED) {
-                permissions_ok = false;
-                break;
-            }
-        }
+        if (PERMISSIONS_OK) {
 
-        if (permissions_ok) {
             //Check if the user has toggled the debug messages
             DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
 
@@ -103,17 +87,14 @@ public class Plugin extends Aware_Plugin {
                 e.printStackTrace();
             }
 
-        } else {
-            Intent permissions = new Intent(this, PermissionsHandler.class);
-            permissions.putExtra(PermissionsHandler.EXTRA_REQUIRED_PERMISSIONS, REQUIRED_PERMISSIONS);
-            permissions.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(permissions);
+            Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
+            Aware.startAWARE(this);
         }
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
-    private int recordFirstOperationInDatabase(){
+    private int recordFirstOperationInDatabase() {
         String FLAG_PLUGIN_UPDATE = "[PLUGIN UPDATE INSTALL]";
         int versionCode = 0;
         try {
@@ -152,7 +133,6 @@ public class Plugin extends Aware_Plugin {
 
         Aware.setSetting(this, Settings.STATUS_PLUGIN_CMU_ESM, false);
 
-        //Stop AWARE
         Aware.stopAWARE(this);
     }
 }
