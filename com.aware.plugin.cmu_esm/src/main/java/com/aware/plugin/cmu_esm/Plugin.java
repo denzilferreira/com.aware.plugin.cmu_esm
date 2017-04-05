@@ -87,7 +87,6 @@ public class Plugin extends Aware_Plugin {
                 e.printStackTrace();
             }
 
-            Aware.startPlugin(this, "com.aware.plugin.cmu_esm");
             Aware.startAWARE(this);
         }
 
